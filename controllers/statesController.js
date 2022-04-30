@@ -1,9 +1,10 @@
 // Import data
+const { json } = require('express/lib/response');
 const State = require('../model/State');
 const statesJSONData = require('../model/states.json');
 
 const getAllStates = async (req, res) => {
-    // Query parameter 
+    // Query parameter  
     const { contig } = req.query;
 
     // Holds results of query 
@@ -12,13 +13,11 @@ const getAllStates = async (req, res) => {
     // Return noncontiguous states
     if (contig === 'false') {
         statesList = statesJSONData.filter(st => st.code === 'AK' || st.code === 'HI');
-        console.log(statesList.length);
         return res.json(statesList);
     }
     // Return contiguous states
     if (contig === 'true') {
         statesList = statesJSONData.filter(st => st.admission_number < 49);
-        console.log(statesList.length);
         return res.json(statesList);
     }
     
@@ -32,10 +31,14 @@ const getAllStates = async (req, res) => {
      
         // 2) If the state is in the results, attach 'funfact' property to the state object
         if(stateExists) {
-            // Attach the funfacts with dot notation
-            state.funfact = [...stateExists.funfact];
+            let funfactArray = stateExists.funfact;
+            // One or more funfacts exist
+            if (funfactArray.length !== 0) {
+                // Attach the funfacts with dot notation
+                state.funfact = [...funfactArray]; 
+            }
         }
-    })
+    });
     res.json(statesList);
 }
 
@@ -44,76 +47,123 @@ const getState = async (req, res) => {
     const stateReq = req.params.state;
 
     // Find the requested state data in the statesJSONData
-    const stateRes = statesJSONData.find(state => state.code === stateReq);
+    const stateData = statesJSONData.find(state => state.code === stateReq);
 
     // Get all the state data documents from MongoDB 
     const mongoStates = await State.find();
     
     // Determine whether state exists in MongoDB collection
-    const stateExists = mongoStates.find(st => st.stateCode === stateRes.code);
+    const stateExists = mongoStates.find(st => st.stateCode === stateData.code);
     
     // Attach the funfacts from MongoDB if they exist
     if(stateExists) {
-        stateRes.funfact = [...stateExists.funfact]; 
+        let funfactArray = stateExists.funfact;
+        // One or more funfacts exist
+        if (funfactArray.length !== 0) {
+            // Attach the funfacts with dot notation
+            stateData.funfact = [...funfactArray]; 
+        }
     }
-    res.json(stateRes);
+    res.json(stateData);
+}
+
+const getStateFunFact = async (req, res) => {
+    // Get the URL parameter
+    const stateReq = req.params.state;
+
+    // Find the specified state from the states.json data
+    const stateData = statesJSONData.find(state => state.code === stateReq);
+    
+    // Get all the state data documents from MongoDB 
+    const mongoStates = await State.find();
+    
+    // Determine whether state exists in MongoDB collection
+    const stateExists = mongoStates.find(st => st.stateCode === stateData.code);
+    
+    // Attach the funfacts from MongoDB if they exist
+    if(stateExists) {
+        let funfactArray = stateExists.funfact;
+        // One or more funfacts exist
+        if (funfactArray.length !== 0) {
+            // Attach the funfacts with dot notation
+            stateData.funfact = [...funfactArray]; 
+        }
+        else {
+            // No funfacts exist
+            return res.json({ "message": `No Fun Facts found for ${stateData.state}`});
+        }
+    }
+    // Get the array of fun facts
+    const funfactArray = stateData.funfact;
+    
+    // Generate a random number between 0 and array length
+    let randomNum = Math.floor(Math.random()*funfactArray.length);
+    
+    // Get funfact at random index
+    let funfact = funfactArray[randomNum];
+
+    // Create a response with the random funfact
+    res.json({ funfact });
 }
 
 const getStateCapital = (req, res) => {
     // Get the URL parameter
-    const stateParam = req.params.state;
+    const stateReq = req.params.state;
 
     // Find the specified state from the states.json data
-    const stateExists = statesJSONData.find(state => state.code === stateParam);
+    const stateData = statesJSONData.find(state => state.code === stateReq);
     
     // Get the state name and capital
-    const stateName = stateExists.state;
-    const capitalName = stateExists.capital_city;
+    const state = stateData.state;
+    const capital = stateData.capital_city;
 
     // Create a response with the state name and capital
-    res.json({ stateName, capitalName });
+    res.json({ state, capital });
 }
 
 const getStateNickname = (req, res) => {
     // Get the URL parameter
-    const stateParam = req.params.state;
+    const stateReq = req.params.state;
 
     // Find the specified state from the states.json data
-    const stateExists = statesJSONData.find(state => state.code === stateParam);
+    const stateData = statesJSONData.find(state => state.code === stateReq);
     
     // Get the state name and capital
-    const stateName = stateExists.state;
-    const nickname = stateExists.nickname;
+    const state = stateData.state;
+    const nickname = stateData.nickname;
 
     // Create a response with the state name and capital
-    res.json({ stateName, nickname });
+    res.json({ state, nickname });
 }
 
 const getStatePopulation = (req, res) => {
     // Get the URL parameter
-    const stateParam = req.params.state;
+    const stateReq = req.params.state;
 
     // Find the specified state from the states.json data
-    const stateExists = statesJSONData.find(state => state.code === stateParam);
+    const stateData = statesJSONData.find(state => state.code === stateReq);
     
     // Get the state name and capital
-    const stateName = stateExists.state;
-    const population = stateExists.population;
+    const state = stateData.state;
+    // population as int 
+    const popInt = stateData.population;   
+    // Convert population to string and add commas
+    const population = popInt.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
     // Create a response with the state name and capital
-    res.json({ stateName, population });
+    res.json({ state, population });
 }
 
 const getStateAdmission = (req, res) => {
     // Get the URL parameter
-    const stateParam = req.params.state;
+    const stateReq = req.params.state;
 
     // Find the specified state from the states.json data
-    const stateExists = statesJSONData.find(state => state.code === stateParam);
+    const stateData = statesJSONData.find(state => state.code === stateReq);
     
     // Get the state name and capital
-    const stateName = stateExists.state;
-    const admissionDate = stateExists.admission_date;
+    const stateName = stateData.state;
+    const admissionDate = stateData.admission_date;
 
     // Create a response with the state name and capital
     res.json({ stateName, admissionDate });
@@ -122,6 +172,7 @@ const getStateAdmission = (req, res) => {
 module.exports = {
     getAllStates, 
     getState, 
+    getStateFunFact,
     getStateCapital,
     getStateNickname, 
     getStatePopulation,

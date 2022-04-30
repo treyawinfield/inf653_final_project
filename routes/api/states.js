@@ -10,10 +10,11 @@ router.route('/')
 router.route('/:state')
     .get(verifyStates, statesController.getState);
 
+    router.route('/:state/funfact')
+    .get(verifyStates, statesController.getStateFunFact);
 
     router.route('/:state/capital')
     .get(verifyStates, statesController.getStateCapital);
-    
     
     router.route('/:state/nickname')
     .get(verifyStates, statesController.getStateNickname);
