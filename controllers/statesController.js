@@ -32,13 +32,13 @@ const getAllStates = async (req, res) => {
         // 1) Attempt to find the state from MongoDB states results
         const stateExists = mongoStates.find(st => st.stateCode === state.code);
      
-        // 2) If the state is in the results, attach 'funfact' property to the state object
+        // 2) If the state is in the results, attach 'funfacts' property to the state object
         if(stateExists) {
-            let funfactArray = stateExists.funfact;
-            // One or more funfacts exist
-            if (funfactArray.length !== 0) {
-                // Attach the funfacts with dot notation
-                state.funfact = [...funfactArray]; 
+            let funfactsArray = stateExists.funfacts;
+            // One or more funfactss exist
+            if (funfactsArray.length !== 0) {
+                // Attach the funfactss with dot notation
+                state.funfacts = [...funfactsArray]; 
             }
         }
     });
@@ -58,19 +58,19 @@ const getState = async (req, res) => {
     // Determine whether state exists in MongoDB collection
     const stateExists = mongoStates.find(st => st.stateCode === stateData.code);
     
-    // Attach the funfacts from MongoDB if they exist
+    // Attach the funfactss from MongoDB if they exist
     if(stateExists) {
-        let funfactArray = stateExists.funfact;
-        // One or more funfacts exist
-        if (funfactArray.length !== 0) {
-            // Attach the funfacts with dot notation
-            stateData.funfact = [...funfactArray]; 
+        let funfactsArray = stateExists.funfacts;
+        // One or more funfactss exist
+        if (funfactsArray.length !== 0) {
+            // Attach the funfactss with dot notation
+            stateData.funfacts = [...funfactsArray]; 
         }
     }
     res.json(stateData);
 }
 
-const getStateFunFact = async (req, res) => {
+const getStateFunFacts = async (req, res) => {
     // Get the URL parameter
     const stateReq = req.params.state;
 
@@ -83,30 +83,30 @@ const getStateFunFact = async (req, res) => {
     // Determine whether state exists in MongoDB collection
     const stateExists = mongoStates.find(st => st.stateCode === stateData.code);
     
-    // Attach the funfacts from MongoDB if they exist
+    // Attach the funfactss from MongoDB if they exist
     if(stateExists) {
-        let funfactArray = stateExists.funfact;
-        // One or more funfacts exist
-        if (funfactArray.length !== 0) {
-            // Attach the funfacts with dot notation
-            stateData.funfact = [...funfactArray]; 
+        let funfactsArray = stateExists.funfacts;
+        // One or more funfactss exist
+        if (funfactsArray.length !== 0) {
+            // Attach the funfactss with dot notation
+            stateData.funfacts = [...funfactsArray]; 
         }
         else {
-            // No funfacts exist
+            // No funfactss exist
             return res.json({ "message": `No Fun Facts found for ${stateData.state}`});
         }
     }
     // Get the array of fun facts
-    const funfactArray = stateData.funfact;
+    const funfactsArray = stateData.funfacts;
     
     // Generate a random number between 0 and array length
-    let randomNum = Math.floor(Math.random()*funfactArray.length);
+    let randomNum = Math.floor(Math.random()*funfactsArray.length);
     
-    // Get funfact at random index
-    let funfact = funfactArray[randomNum];
+    // Get funfacts at random index
+    let funfacts = funfactsArray[randomNum];
 
-    // Create a response with the random funfact
-    res.json({ funfact });
+    // Create a response with the random funfacts
+    res.json({ funfacts });
 }
 
 const getStateCapital = (req, res) => {
@@ -175,31 +175,31 @@ const getStateAdmission = (req, res) => {
 /*---------------------------------------------------------------------------------------
     POST Request Functions 
 ---------------------------------------------------------------------------------------*/
-const createStateFunFact = async (req, res) => {
-    // Request body passes in 1) stateCode and 2) array of new funfact(s) 
+const createStateFunFacts = async (req, res) => {
+    // Request body passes in 1) stateCode and 2) array of new funfacts(s) 
     const stateCode = req.body.stateCode;
-    const funfact = req.body.funfact;
+    const funfacts = req.body.funfacts;
     console.log(stateCode);
-    console.log(funfact);
+    console.log(funfacts);
 
     // Verify the necessary values were passed in 
-    if(!stateCode || !funfact) {
+    if(!stateCode || !funfacts) {
         return res.status(400).json({"message": "State fun facts value required"});
     }
 
-    // Verify new funfacts are passed in as array
-    if (!funfact instanceof Array || funfact.length === 0) {
-        return res.status(400).json({"message": "State fun facts value required"});
+    // Verify new funfactss are passed in as array
+    if (!funfacts instanceof Array || funfacts.length === 0) {
+        return res.status(400).json({"message": "State fun facts value must be an array"});
     }
 
     // Find the requested state in MongoDB collection
     const foundState = await State.findOne({stateCode: stateCode});
     console.log(foundState);
 
-    // If state has an existing array of funfacts, ADD the new funfacts to them (do NOT delete existing funfacts)
-    // If the state does NOT have an existing array of funfacts, create a new record in MongoDB collection with stateCode and funfacts array
-    let funfactArray = foundState.funfact;
-    funfactArray = funfactArray.push(...funfact);
+    // If state has an existing array of funfactss, ADD the new funfactss to them (do NOT delete existing funfactss)
+    // If the state does NOT have an existing array of funfactss, create a new record in MongoDB collection with stateCode and funfactss array
+    let funfactsArray = foundState.funfacts;
+    funfactsArray = funfactsArray.push(...funfacts);
     const result = await foundState.save();
 
     res.json(result);
@@ -208,10 +208,10 @@ const createStateFunFact = async (req, res) => {
 module.exports = {
     getAllStates, 
     getState, 
-    getStateFunFact,
+    getStateFunFacts,
     getStateCapital,
     getStateNickname, 
     getStatePopulation,
     getStateAdmission,
-    createStateFunFact
+    createStateFunFacts
 }
