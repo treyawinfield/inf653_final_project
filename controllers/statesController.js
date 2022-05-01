@@ -3,9 +3,6 @@ const { json } = require('express/lib/response');
 const State = require('../model/State');
 const statesJSONData = require('../model/states.json');
 
-/*---------------------------------------------------------------------------------------
-    GET Request Functions
----------------------------------------------------------------------------------------*/
 const getAllStates = async (req, res) => {
     // Query parameter  
     const { contig } = req.query;
@@ -32,13 +29,14 @@ const getAllStates = async (req, res) => {
         // 1) Attempt to find the state from MongoDB states results
         const stateExists = mongoStates.find(st => st.stateCode === state.code);
      
-        // 2) If the state is in the results, attach 'funfacts' property to the state object
+        // 2) If the state is in the results, attach 'funfact' property to the state object
         if(stateExists) {
-            let funfactsArray = stateExists.funfacts;
-            // One or more funfactss exist
-            if (funfactsArray.length !== 0) {
-                // Attach the funfactss with dot notation
-                state.funfacts = [...funfactsArray]; 
+            let funfactArray = stateExists.funfacts;
+            console.log(funfactArray);
+            // One or more funfacts exist
+            if (funfactArray.length !== 0) {
+                // Attach the funfacts with dot notation
+                state.funfacts = [...funfactArray]; 
             }
         }
     });
@@ -58,19 +56,19 @@ const getState = async (req, res) => {
     // Determine whether state exists in MongoDB collection
     const stateExists = mongoStates.find(st => st.stateCode === stateData.code);
     
-    // Attach the funfactss from MongoDB if they exist
+    // Attach the funfacts from MongoDB if they exist
     if(stateExists) {
-        let funfactsArray = stateExists.funfacts;
-        // One or more funfactss exist
-        if (funfactsArray.length !== 0) {
-            // Attach the funfactss with dot notation
-            stateData.funfacts = [...funfactsArray]; 
+        let funfactArray = stateExists.funfacts;
+        // One or more funfacts exist
+        if (funfactArray.length !== 0) {
+            // Attach the funfacts with dot notation
+            stateData.funfacts = [...funfactArray]; 
         }
     }
     res.json(stateData);
 }
 
-const getStateFunFacts = async (req, res) => {
+const getStateFunFact = async (req, res) => {
     // Get the URL parameter
     const stateReq = req.params.state;
 
@@ -83,30 +81,30 @@ const getStateFunFacts = async (req, res) => {
     // Determine whether state exists in MongoDB collection
     const stateExists = mongoStates.find(st => st.stateCode === stateData.code);
     
-    // Attach the funfactss from MongoDB if they exist
+    // Attach the funfacts from MongoDB if they exist
     if(stateExists) {
-        let funfactsArray = stateExists.funfacts;
-        // One or more funfactss exist
-        if (funfactsArray.length !== 0) {
-            // Attach the funfactss with dot notation
-            stateData.funfacts = [...funfactsArray]; 
+        let funfactArray = stateExists.funfacts;
+        // One or more funfacts exist
+        if (funfactArray.length !== 0) {
+            // Attach the funfacts with dot notation
+            stateData.funfacts = [...funfactArray]; 
         }
         else {
-            // No funfactss exist
+            // No funfacts exist
             return res.json({ "message": `No Fun Facts found for ${stateData.state}`});
         }
     }
     // Get the array of fun facts
-    const funfactsArray = stateData.funfacts;
+    const funfactArray = stateData.funfacts;
     
     // Generate a random number between 0 and array length
-    let randomNum = Math.floor(Math.random()*funfactsArray.length);
+    let randomNum = Math.floor(Math.random()*funfactArray.length);
     
-    // Get funfacts at random index
-    let funfacts = funfactsArray[randomNum];
+    // Get funfact at random index
+    let funfact = funfactArray[randomNum];
 
-    // Create a response with the random funfacts
-    res.json({ funfacts });
+    // Create a response with the random funfact
+    res.json({ funfact });
 }
 
 const getStateCapital = (req, res) => {
@@ -172,46 +170,12 @@ const getStateAdmission = (req, res) => {
     res.json({ stateName, admissionDate });
 }
 
-/*---------------------------------------------------------------------------------------
-    POST Request Functions 
----------------------------------------------------------------------------------------*/
-const createStateFunFacts = async (req, res) => {
-    // Request body passes in 1) stateCode and 2) array of new funfacts(s) 
-    const stateCode = req.body.stateCode;
-    const funfacts = req.body.funfacts;
-    console.log(stateCode);
-    console.log(funfacts);
-
-    // Verify the necessary values were passed in 
-    if(!stateCode || !funfacts) {
-        return res.status(400).json({"message": "State fun facts value required"});
-    }
-
-    // Verify new funfactss are passed in as array
-    if (!funfacts instanceof Array || funfacts.length === 0) {
-        return res.status(400).json({"message": "State fun facts value must be an array"});
-    }
-
-    // Find the requested state in MongoDB collection
-    const foundState = await State.findOne({stateCode: stateCode});
-    console.log(foundState);
-
-    // If state has an existing array of funfactss, ADD the new funfactss to them (do NOT delete existing funfactss)
-    // If the state does NOT have an existing array of funfactss, create a new record in MongoDB collection with stateCode and funfactss array
-    let funfactsArray = foundState.funfacts;
-    funfactsArray = funfactsArray.push(...funfacts);
-    const result = await foundState.save();
-
-    res.json(result);
-}
-
 module.exports = {
     getAllStates, 
     getState, 
-    getStateFunFacts,
+    getStateFunFact,
     getStateCapital,
     getStateNickname, 
     getStatePopulation,
-    getStateAdmission,
-    createStateFunFacts
+    getStateAdmission
 }

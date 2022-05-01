@@ -11,9 +11,7 @@ router.route('/:state')
     .get(verifyStates, statesController.getState);
 
     router.route('/:state/funfact')
-    .get(verifyStates, statesController.getStateFunFacts)
-    .post(verifyStates, statesController.createStateFunFacts);
-
+    .get(verifyStates, statesController.getStateFunFact);
 
     router.route('/:state/capital')
     .get(verifyStates, statesController.getStateCapital);
