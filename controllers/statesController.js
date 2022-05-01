@@ -1,5 +1,5 @@
 // Import data
-const { json } = require('express/lib/response');
+const { json } = require('express/lib/response'); 
 const State = require('../model/State');
 const statesJSONData = require('../model/states.json');
 
@@ -163,11 +163,11 @@ const getStateAdmission = (req, res) => {
     const stateData = statesJSONData.find(state => state.code === stateReq);
     
     // Get the state name and capital
-    const stateName = stateData.state;
-    const admissionDate = stateData.admission_date;
+    const state = stateData.state;
+    const admitted = stateData.admission_date;
 
     // Create a response with the state name and capital
-    res.json({ stateName, admissionDate });
+    res.json({ state, admitted });
 }
 
 module.exports = {
