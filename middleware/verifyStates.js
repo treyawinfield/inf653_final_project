@@ -13,7 +13,7 @@ const verifyStates = (req, res, next) => {
 
     // If isState does not exist, send proper response
     if (!isState) {
-        return res.status(400).json({ "message": "Invalid state abbreviation"});
+        return res.status(400).json({ "message": "Invalid state abbreviation parameter"});
     }
     // If isState exists, attach to req and call next()
     req.params.state = stateAbbrev;
