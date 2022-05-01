@@ -1,8 +1,13 @@
-// Import data
+/*---------------------------------------------------------------------------------------
+    Imported Data
+---------------------------------------------------------------------------------------*/
 const { json } = require('express/lib/response'); 
 const State = require('../model/State');
 const statesJSONData = require('../model/states.json');
 
+/*---------------------------------------------------------------------------------------
+    GET Request Functions 
+---------------------------------------------------------------------------------------*/
 const getAllStates = async (req, res) => {
     // Query parameter  
     const { contig } = req.query;
@@ -170,6 +175,49 @@ const getStateAdmission = (req, res) => {
     res.json({ state, admitted });
 }
 
+/*---------------------------------------------------------------------------------------
+    POST Request Functions 
+---------------------------------------------------------------------------------------*/
+const createStateFunFact = async (req, res) => {
+    // Request body passes in 1) stateCode and 2) array of new funfact(s) 
+    const stateCode = req.body.stateCode;
+    const funfacts = req.body.funfacts;
+    console.log(stateCode);
+    console.log(funfacts);
+    console.log(typeof funfacts);
+
+    // Verify the necessary values were passed in 
+    if(!stateCode || !funfacts) {
+        return res.status(400).json({"message": "State fun facts value required"});
+    }
+
+    // Verify new funfacts are passed in as array
+    if (!(funfacts instanceof Array) || funfacts instanceof String) {   // Maybe add back later: || funfacts.length === 0
+        return res.status(400).json({"message": "State fun facts value must be an array"});
+    }
+
+    // Find the requested state in MongoDB collection
+    const foundState = await State.findOne({stateCode: stateCode});
+    console.log(foundState);
+
+    // If state has an existing array of funfacts, ADD the new funfacts to them (do NOT delete existing funfacts)
+    // If the state does NOT have an existing array of funfacts, create a new record in MongoDB collection with stateCode and funfacts array
+    let funfactArray = foundState.funfacts;
+    funfactArray = funfactArray.push(...funfacts);
+    const result = await foundState.save();
+
+    res.json(result);
+}
+
+/*---------------------------------------------------------------------------------------
+    PATCH Request Functions 
+---------------------------------------------------------------------------------------*/
+
+
+/*---------------------------------------------------------------------------------------
+    DELETE Request Functions 
+---------------------------------------------------------------------------------------*/
+
 module.exports = {
     getAllStates, 
     getState, 
@@ -177,5 +225,6 @@ module.exports = {
     getStateCapital,
     getStateNickname, 
     getStatePopulation,
-    getStateAdmission
+    getStateAdmission,
+    createStateFunFact
 }
