@@ -180,12 +180,12 @@ const getStateAdmission = (req, res) => {
 ---------------------------------------------------------------------------------------*/
 const createStateFunFact = async (req, res) => {
     // Verify the necessary values were passed in 
-    if(!req.body.stateCode || !req.body.funfacts) {
+    if(!req.body.funfacts) {
         return res.status(400).json({"message": "State fun facts value required"});
     }
 
     // Request body passes in 1) stateCode and 2) array of new funfact(s) 
-    const stateCode = req.body.stateCode;
+    const stateCode = req.params.state;
     const funfacts = req.body.funfacts;
 
     // Verify new funfacts are passed in as array
@@ -195,15 +195,16 @@ const createStateFunFact = async (req, res) => {
 
     // Find the requested state in MongoDB collection
     const foundState = await State.findOne({stateCode: stateCode});
-    console.log(foundState);
+    // console.log(foundState);
 
-    // Create a new record in MongoDB collection with stateCode and funfacts array
+    // If the state does NOT have an existing array of funfacts, create a new record in MongoDB collection with stateCode and funfacts array
     if (!foundState) {
         try {
             const result = await State.create({
                 stateCode: stateCode,
                 funfacts: funfacts
             });
+            console.log(typeof result);
             res.status(201).json(result);
         }
         catch (err) {
@@ -212,7 +213,6 @@ const createStateFunFact = async (req, res) => {
     }
     else {
         // If state has an existing array of funfacts, ADD the new funfacts to them (do NOT delete existing funfacts)
-        // If the state does NOT have an existing array of funfacts, create a new record in MongoDB collection with stateCode and funfacts array
         let funfactArray = foundState.funfacts;
         funfactArray = funfactArray.push(...funfacts);
         const result = await foundState.save();
