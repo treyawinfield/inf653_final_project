@@ -259,7 +259,48 @@ const updateStateFunFact = async (req, res) => {
 /*---------------------------------------------------------------------------------------
     DELETE Request Functions 
 ---------------------------------------------------------------------------------------*/
+const deleteStateFunFact = async (req, res) => {
+    // Verify index value was included in request body 
+    if(!req.body.index) {
+        return res.status(400).json({"message": "State fun fact index value required"});
+    }
+    
+    // Subtract 1 from index value to match up with correct index of the funfacts array in MongoDB
+    const index = parseInt(req.body.index) - 1;
 
+    // Get requested state code from URL parameter
+    const stateCode = req.params.state;
+
+    // Get correspondning state name from statesJSONData (to use for invalid input responses)
+    const stateData = statesJSONData.find(state => state.code === stateCode);
+    const stateName = stateData.state;
+    
+    // Find the requested state in MongoDB collection
+    const foundState = await State.findOne({stateCode: stateCode});
+
+    // Get funfacts array for requested state
+    let funfactArray = foundState.funfacts;
+
+    // If no funfacts exist for requested state, send an appropriate response
+    if(!funfactArray.length) {
+        return res.status(400).json({"message": `No Fun Facts found for ${stateName}`});
+    }
+    // If no funfacts exist at the specified index, send an appropriate response
+    if(!funfactArray[index]) {
+        return res.status(400).json({"message": `No Fun Fact found at that index for ${stateName}`});
+    }
+
+    // Splice and remove specified index from funfacts
+    funfactArray.splice(index, 1);
+
+    // Save the record and respond with the result received from the model
+    const result = await foundState.save();
+    res.status(201).json(result); 
+}
+
+/*---------------------------------------------------------------------------------------
+    Exported Functions 
+---------------------------------------------------------------------------------------*/
 module.exports = {
     getAllStates, 
     getState, 
@@ -269,5 +310,6 @@ module.exports = {
     getStatePopulation,
     getStateAdmission,
     createStateFunFact,
-    updateStateFunFact
+    updateStateFunFact,
+    deleteStateFunFact
 }
